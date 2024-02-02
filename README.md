@@ -23,14 +23,12 @@
 
 ## Preface
 
-This document consists of five parts: ***Programming Specification***, ***Exception and Logs***, ***MySQL Specification***, ***Project Specification*** and ***Security Specification***. Based on the severity of the concerns, each specification is classified into three levels: ***Mandatory***, ***Recommended*** and ***Reference***. Further clarification is expressed in:  
+This document consists of five parts: ***Programming Specification***, ***Exception and Logs***, ***MySQL Specification***, ***Server Specification*** and ***Security Specification***. Based on the severity of the concerns, each specification is classified into three levels: ***Mandatory***, ***Recommended*** and ***Reference***. Further clarification is expressed in:  
  (1) "**Description**", which explains the content;  
  (2) "**Positive examples**", which describe recommended coding and implementation approaches;   
  (3) "**Counter examples**", which describe precautions and actual error cases.
 
-The main purpose of this document is to help developers improve code quality. As a result, developers can minimize potential and repetitive code errors. In addition, specification is essential to modern software architectures, which enable effective  collaborations. As an analogy, traffic regulations are intended to protect public safety rather than to deprive the rights of driving. It is easy to imagine the chaos of traffic without speed limits and traffic lights. Instead of destroying the creativity and elegance of program, the purpose of developing appropriate specification and standards of software is to improve the efficiency of collaboration by limiting excessive personalization.
-
-We will continue to collect feedback from the community to improve Alibaba Java Coding Guidelines. 
+The main purpose of this document is to help developers improve code quality. As a result, developers can minimize potential and repetitive code errors. In addition, specification is essential to modern software architectures, which enable effective collaborations.
       
 ## <font color="green">1. Programming Specification</font>
 ### <font color="green">Naming Conventions</font>
@@ -60,7 +58,7 @@ We will continue to collect feedback from the community to improve Alibaba Java 
 > <font color="#FF4500">Counter example: </font>*boolean isSuccess;* The method name will be `isSuccess()` and then RPC framework will deduce the variable name as 'success', resulting in a serialization error since it cannot find the correct attribute.
 
 9\. **[Mandatory]** A package should be named in lowercase characters. There should be only one English word after each dot. Package names are always in <font color="blue">singular</font> format while class names can be in plural format if necessary.  
-> <font color="#019858">Positive example: </font> `uk.ac.manchester.dhs.affirmo.util` can be used as a package name for utils;
+> <font color="#019858">Positive example: </font> `uk.ac.manchester.dhs.xxx.util` can be used as a package name for utils;
 `MessageUtils` can be used as a class name.
 
 
@@ -68,7 +66,7 @@ We will continue to collect feedback from the community to improve Alibaba Java 
  > <font color="#FF4500">Counter example: </font>AbsClass (AbstractClass); condi (Condition)
 
 11\. **[Recommended]**  The pattern name is recommended to be included in the class name if any design pattern is used.  
- > <font color="#019858">Positive example: </font>`public class OrderFactory;  `
+ > <font color="#019858">Positive example: </font>`public class PrescriptionFactory;  `
 `public class LoginProxy;`  `public class ResourceObserver;`  
 > <font color="#977C00">Note: </font> Including corresponding pattern names helps readers understand ideas in design patterns quickly.
 
@@ -115,7 +113,7 @@ constant definition: `String TRUST = "NWL";`
 
 4\. **[Mandatory]** There must be one space at both left and right side of operators, such as '=', '&&', '+', '-', *ternary operator*, etc.
 
-5\. **[Mandatory]** Each time a new block or block-like construct is opened, the indent increases by four spaces. When the block ends, the indent returns to the previous indent level. Tab characters are not used for indentation.   
+5\. **[Mandatory]** Each time a new block or block-like construct is opened, **the indent increases by four spaces**. When the block ends, the indent returns to the previous indent level. Tab characters are not used for indentation.   
 > <font color="#977C00">Note: </font>To prevent tab characters from being used for indentation, you must configure your IDE. For example, "Use tab character" should be unchecked in IDEA, "insert spaces for tabs" should be checked in Eclipse.  
 > <font color="#019858">Positive example: </font>     
 ```java 
@@ -271,9 +269,15 @@ public User getUsers(String type, Integer... ids);
 &emsp;&emsp;1) Members of a POJO class must be wrapper classes.  
 &emsp;&emsp;2) The return value and arguments of a RPC method must be wrapper classes.   
 &emsp;&emsp;3) **[Recommended]** Local variables should be primitive data types.  
-&emsp;&emsp;<font color="#977C00">Note: </font>In order to remind the consumer of explicit assignments, there are no initial values for members in a POJO class. As a consumer, you should check problems such as `NullPointerException` and warehouse entries for yourself.   
-&emsp;&emsp;<font color="#019858">Positive example: </font>As the result of a database query may be *null*, assigning it to a primitive date type will cause a risk of `NullPointerException` because of autoboxing.     
-&emsp;&emsp;<font color="#FF4500">Counter example: </font>Consider the output of a  transaction volume's amplitude, like *±x%*. As a primitive data, when it comes to a failure of calling a RPC service, the default return value: *0%* will be assigned, which is not correct. A hyphen like *-* should be assigned instead. Therefore, the *null* value of a wrapper class can represent additional information, such as a failure of calling a RPC service, an abnormal exit, etc.
+> <font color="#977C00">Note: </font>In order to remind the consumer of explicit assignments, there are no initial values for members in a POJO class. As a consumer, you should check problems such as `NullPointerException` and warehouse entries for yourself.
+
+> <font color="#019858">Positive example: </font>
+
+As the result of a database query may be *null*, assigning it to a primitive date type will cause a risk of `NullPointerException` because of autoboxing.     
+
+> <font color="#FF4500">Counter example: </font>
+
+Consider the output of a  transaction volume's amplitude, like *±x%*. As a primitive data, when it comes to a failure of calling a RPC service, the default return value: *0%* will be assigned, which is not correct. A hyphen like *-* should be assigned instead. Therefore, the *null* value of a wrapper class can represent additional information, such as a failure of calling a RPC service, an abnormal exit, etc.
 
 10\. **[Mandatory]** While defining POJO classes like DO, DTO, VO, etc., do not assign any <font color="blue">default values</font> to the members.   
 
@@ -887,18 +891,15 @@ logger.error(various parameters or objects toString + "_" + e.getMessage(), e);
 
 5\. **[Mandatory]** When coding on DB query with paging logic, it should return immediately once count is *0*, to avoid executing paging query statement followed.
 
-6\. **[Mandatory]** *Foreign key* and *cascade update* are not allowed. All foreign key related logic should be handled in application layer.  
-> <font color="#977C00">Note: </font> e.g. Student table has *student_id* as primary key, score table has *student_id* as foreign key. When *student.student_id* is updated, *score.student_id update* is also triggered, this is called a *cascading update*. *Foreign key* and *cascading update* are suitable for single machine, low parallel systems, not for distributed, high parallel cluster systems. *Cascading updates* are strong blocked, as it may lead to a DB update storm. *Foreign key* affects DB insertion efficiency.
+6\. **[Mandatory]** Stored procedures are not allowed. They are difficult to debug, extend and not portable.
 
-7\. **[Mandatory]** Stored procedures are not allowed. They are difficult to debug, extend and not portable.
+7\. **[Mandatory]** When correcting data, delete and update DB records, *SELECT* should be done first to ensure data correctness.
 
-8\. **[Mandatory]** When correcting data, delete and update DB records, *SELECT* should be done first to ensure data correctness.
+8\. **[Recommended]** *IN* clause should be avoided. Record set size of the *IN* clause should be evaluated carefully and control it within 1000, if it cannot be avoided.
 
-9\. **[Recommended]** *IN* clause should be avoided. Record set size of the *IN* clause should be evaluated carefully and control it within 1000, if it cannot be avoided.
+9\. **[For Reference]** For globalization needs, characters should be represented and stored with *UTF8MB4*.
 
-10\. **[For Reference]** For globalization needs, characters should be represented and stored with *UTF8MB4*.
-
-11\. **[For Reference]** *TRUNCATE* is not recommended when coding, even if it is faster than *DELETE* and uses less system, transaction log resource. Because *TRUNCATE* does not have transaction nor trigger DB *trigger*, problems might occur.  
+10\. **[For Reference]** *TRUNCATE* is not recommended when coding, even if it is faster than *DELETE* and uses less system, transaction log resource. Because *TRUNCATE* does not have transaction nor trigger DB *trigger*, problems might occur.  
 > <font color="#977C00">Note: </font>In terms of Functionality, *TRUNCATE TABLE* is similar to *DELETE* without *WHERE* sub-clause. 
 ## <font color="green">4. Server Specification</font>
 1\. **[Recommended]** It is recommended to reduce the *time_wait* value of the *TCP* protocol for high concurrency servers.  
