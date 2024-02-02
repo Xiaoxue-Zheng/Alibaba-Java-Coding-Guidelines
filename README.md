@@ -18,15 +18,10 @@
    * [Table Schema Rules](#table-schema-rules)
    * [Index Rules](#index-rules)
    * [SQL Rules](#sql-rules)
-   * [ORM Rules](#orm-rules)
-* [4. Project Specification](#4-project-specification)
-   * [Application Layers](#application-layers)
-   * [Library Specification](#library-specification)
-   * [Server Specification](#server-specification)
+* [4. Server Specification](#4-server-specification)
 * [5. Security Specification](#5-security-specification)
 
 ## Preface
-We are pleased to present **Alibaba Java Coding Guidelines**, which consolidates the best programming practices from Alibaba Group's technical teams. A vast number of Java programming teams impose demanding requirements on code quality across projects as we encourage reuse and better understanding of each other's programs. We have seen many programming problems in the past. For example, defective database table structures and index designs may cause software architecture flaws and performance risks. As another example, confusing code structures make it difficult to maintain. Furthermore, vulnerable code without authentication is prone to hackers’ attacks. To address those kinds of problems, we developed this document for Java developers in Alibaba. 
 
 This document consists of five parts: ***Programming Specification***, ***Exception and Logs***, ***MySQL Specification***, ***Project Specification*** and ***Security Specification***. Based on the severity of the concerns, each specification is classified into three levels: ***Mandatory***, ***Recommended*** and ***Reference***. Further clarification is expressed in:  
  (1) "**Description**", which explains the content;  
@@ -39,12 +34,11 @@ We will continue to collect feedback from the community to improve Alibaba Java 
       
 ## <font color="green">1. Programming Specification</font>
 ### <font color="green">Naming Conventions</font>
-1\. **[Mandatory]** Names should not start or end with an underline or  a dollar sign.   
+1\. **[Mandatory]** Names should not start or end with an underline or a dollar sign.   
 > <font color="#FF4500">Counter example: </font> \_name / \_\_name / \$Object / name_ / name\$ / Object\$
 
-2\. **[Mandatory]** Using Chinese, Pinyin, or Pinyin-English mixed spelling in naming is strictly prohibited. Accurate English spelling and grammar will make the code readable, understandable, and maintainable.   
-> <font color="#019858">Positive example: </font> alibaba / taobao / youku / Hangzhou. In these cases, Chinese proper names in Pinyin are acceptable.
-
+2\. **[Mandatory]** Accurate English spelling and grammar will make the code readable, understandable, and maintainable.   
+>
 3\. **[Mandatory]** Class names should be nouns in UpperCamelCase except domain models: DO, BO, DTO, VO, etc.   
  > <font color="#019858">Positive example: </font>MarcoPolo  /  UserDO  /  HtmlDTO  /  XmlService  /  TcpUdpDeal / TaPromotion  
  > <font color="#FF4500">Counter example: </font>marcoPolo  /  UserDo  /  HTMLDto  /  XMLService  /  TCPUDPDeal / TAPromotion  
@@ -66,7 +60,7 @@ We will continue to collect feedback from the community to improve Alibaba Java 
 > <font color="#FF4500">Counter example: </font>*boolean isSuccess;* The method name will be `isSuccess()` and then RPC framework will deduce the variable name as 'success', resulting in a serialization error since it cannot find the correct attribute.
 
 9\. **[Mandatory]** A package should be named in lowercase characters. There should be only one English word after each dot. Package names are always in <font color="blue">singular</font> format while class names can be in plural format if necessary.  
-> <font color="#019858">Positive example: </font> `com.alibaba.open.util` can be used as a package name for utils;
+> <font color="#019858">Positive example: </font> `uk.ac.manchester.dhs.affirmo.util` can be used as a package name for utils;
 `MessageUtils` can be used as a class name.
 
 
@@ -80,55 +74,32 @@ We will continue to collect feedback from the community to improve Alibaba Java 
 
 12\. **[Recommended]** Do not add any modifier, including `public`, to methods in interface classes for coding simplicity. Please add valid *Javadoc* comments for methods. Do not define any variables in the interface except for the common constants of the application.  
  > <font color="#019858">Positive example: </font>method definition in the interface: `void f(); `  
-constant definition: `String COMPANY = "alibaba";`    
+constant definition: `String TRUST = "NWL";`    
 > <font color="#977C00">Note: </font>In JDK8 it is allowed to define a default implementation for interface methods, which is valuable for all implemented classes.
 
 13\. There are two main rules for interface and corresponding implementation class naming:  
-&emsp;&emsp;1) **[Mandatory]** All *Service* and *DAO* classes must be interfaces based on SOA principle. Implementation class names should end with *Impl*.  
+**[Mandatory]** All *Service* classes must be interfaces based on SOA principle. Implementation class names should end with *Impl*.  
   > <font color="#019858">Positive example: </font>`CacheServiceImpl` to implement `CacheService`.  
     
-&emsp;&emsp;2) **[Recommended]** If the interface name is to indicate the ability of the interface, then its name should be an adjective.  
+ **[Recommended]** If the interface name is to indicate the ability of the interface, then its name should be an adjective.  
   > <font color="#019858">Positive example: </font>`AbstractTranslator` to implement `Translatable`.
 
-14\. **[For Reference]** An Enumeration class name should end with *Enum*. Its members should be spelled out in upper case words, separated by underlines.  
+14\. **[For Reference]** An Enumeration class name should end with *Enum*. Its members should be spelt out in upper case words, separated by underlines.  
  > <font color="#977C00">Note: </font>Enumeration is indeed a special constant class and all constructor methods are private by default.  
  > <font color="#019858">Positive example: </font>Enumeration name: `DealStatusEnum`; Member name: `SUCCESS  / UNKOWN_REASON`.
 
-15\. **[For Reference]** Naming conventions for different package layers:  
-&emsp;&emsp;A) Naming conventions for Service/DAO layer methods  
-&emsp;&emsp;&emsp;&emsp;1) Use `get` as name prefix for a method to get a single object.  
-&emsp;&emsp;&emsp;&emsp;2) Use `list` as name prefix for a method to get multiple objects.  
-&emsp;&emsp;&emsp;&emsp;3) Use `count` as name prefix for a statistical method.  
-&emsp;&emsp;&emsp;&emsp;4) Use `insert` or `save` (recommended) as name prefix for a method to save data.  
-&emsp;&emsp;&emsp;&emsp;5) Use `delete` or `remove` (recommended) as name prefix for a method to remove data.  
-&emsp;&emsp;&emsp;&emsp;6) Use `update` as name prefix for a method to update data.   
-&emsp;&emsp;B) Naming conventions for Domain models  
-&emsp;&emsp;&emsp;&emsp;1) Data Object: \*DO, where \* is the table name.  
-&emsp;&emsp;&emsp;&emsp;2) Data Transfer Object: \*DTO, where \* is a domain-related name.  
-&emsp;&emsp;&emsp;&emsp;3) Value Object: \*VO, where \* is a website name in most cases.  
-&emsp;&emsp;&emsp;&emsp;4) POJO generally point to DO/DTO/BO/VO but cannot be used in naming as \*POJO. 
 
 ### <font color="green">Constant Conventions</font>
 1\. **[Mandatory]** Magic values, except for predefined, are forbidden in coding.       
-> <font color="#FF4500">Counter example: </font> String key = <font color="blue">"Id#taobao_"</font> + tradeId;  
+> <font color="#FF4500">Counter example: </font> String key = <font color="blue">"Id#patient_"</font> + patientId;  
 
-2\. **[Mandatory]** 'L' instead of 'l' should be used for long or Long variable because 'l' is easily to be regarded as number 1 in mistake.  
+2\. **[Mandatory]** 'L' instead of 'l' should be used for long or Long variables because 'l' is easy to be regarded as number 1 in mistake.  
 > <font color="#FF4500">Counter example: </font>`Long a = 2l`, it is hard to tell whether it is number 21 or Long 2.
 
 3\. **[Recommended]** Constants should be placed in different constant classes based on their functions. For example, cache related constants could be put in `CacheConsts` while configuration related constants could be kept in `ConfigConsts`.   
  > <font color="#977C00">Note: </font>It is difficult to find one constant in one big complete constant class.
 
-4\. **[Recommended]** Constants can be shared in the following 5 different layers: *shared in multiple applications; shared inside an application;  shared in a sub-project;  shared in a package; shared in a class*.  
-&emsp;&emsp;1) Shared in multiple applications: keep in  a library, under `constant` directory in client.jar;  
-&emsp;&emsp;2) Shared in an application: keep in shared modules within the application, under `constant` directory;  
-&emsp;&emsp;<font color="#FF4500">Counter example: </font>Obvious variable names should also be defined as common shared constants in an application. The following definitions caused an exception in the production environment: it returns *false*, but is expected to return *true* for `A.YES.equals(B.YES)`.  
-&emsp;&emsp;Definition in Class A: `public static final String YES = "yes";`    
-&emsp;&emsp;Definition in Class B: `public static final String YES = "y";`    
-&emsp;&emsp;3) Shared in a sub-project: placed under `constant` directory in the current project;  
-&emsp;&emsp;4) Shared in a package: placed under `constant` directory in current package;  
-&emsp;&emsp;5) Shared in a class: defined as 'private static final' inside class.
-
-5\. **[Recommended]** Use an enumeration class if values lie in a fixed range or if the variable has attributes. The following example shows that extra information (which day it is) can be included in enumeration:  
+4\. **[Recommended]** Use an enumeration class if values lie in a fixed range or if the variable has attributes. The following example shows that extra information (which day it is) can be included in enumeration:  
  > <font color="#019858">Positive example: </font>public Enum{ MONDAY(1), TUESDAY(2), WEDNESDAY(3), THURSDAY(4), FRIDAY(5), SATURDAY(6), SUNDAY(7);}
 
 ### <font color="green">Formatting Style</font>
@@ -169,7 +140,7 @@ public static void main(String[] args) {
 }
 ```
 
-6\. **[Mandatory]** Java code has a column limit of 120 characters. Except import statements, any line that would exceed this limit must be line-wrapped as follows:   
+6\. **[Mandatory]** Java code has a **column limit of 120** characters. Except import statements, any line that would exceed this limit must be line-wrapped as follows:   
 &emsp;&emsp;1) The second line should be intented at 4 spaces with respect to the first one. The third line and following ones should align with the second line.      
 &emsp;&emsp;2) Operators should be moved to the next line together with following context.    
 &emsp;&emsp;3) Character '.' should be moved to the next line together with the method after it.    
@@ -234,7 +205,7 @@ public User getUsers(String type, Integer... ids);
 4\. **[Mandatory]** Modifying the <font color="blue">method signature</font> is forbidden to avoid affecting the caller. A `@Deprecated` annotation with an explicit description of the new service is necessary when an interface is deprecated.
 
 5\. **[Mandatory]** Using a deprecated class or method is prohibited.  
- > <font color="#977C00">Note: </font>For example, `decode(String source, String encode)` should be used instead of the deprecated method `decode(String encodeStr)`. Once an interface has been deprecated, the interface provider has the obligation to provide a new one. At the same time, client programmers have  the obligation to use the new interface.
+ > <font color="#977C00">Note: </font>For example, `decode(String source, String encode)` should be used instead of the deprecated method `decode(String encodeStr)`. Once an interface has been deprecated, the interface provider has the obligation to provide a new one. At the same time, client programmers have the obligation to use the new interface.
 
 6\. **[Mandatory]** Since `NullPointerException` can possibly be thrown while calling the *equals* method of `Object`, *equals* should be invoked by a constant or an object that is definitely not *null*.  
  > <font color="#019858">Positive example: </font> `"test".equals(object);`   
@@ -246,7 +217,7 @@ public User getUsers(String type, Integer... ids);
  
 8\. **[Mandatory]** To judge the equivalence of floating-point numbers, `==` cannot be used for primitive types, while `equals` cannot be used for wrapper classes.
 
- > <font color="#977C00">Note: </font> Floating-point numbers are composed by mantissa and exponent, which is similar to the coefficient and exponent of scientific notation. Most decimal fractions cannot be represented precisely by binary.
+ > <font color="#977C00">Note: </font> Floating-point numbers are composed of mantissa and exponent, which is similar to the coefficient and exponent of scientific notation. Most decimal fractions cannot be represented precisely by binary.
  
  > <font color="#FF4500">Counter example: </font>
  
@@ -311,7 +282,7 @@ public User getUsers(String type, Integer... ids);
 
 12\. **[Mandatory]** Business logic in constructor methods is prohibited. All initializations should be implemented in the `init` method.
 
-13\. **[Mandatory]** The `toString` method must be implemented in a POJO class. The `super.toString` method should be called in in the beginning of the implementation if the current class extends another POJO class.
+13\. **[Mandatory]** The `toString` method must be implemented in a POJO class. The `super.toString` method should be called in at the beginning of the implementation if the current class extends another POJO class.
  > <font color="#977C00">Note: </font>We can call the `toString` method in a POJO directly to print property values in order to check the problem when a method throws an exception in runtime.
 
 14\. **[Recommended]** When accessing an array generated by the split method in String using an index, make sure to check the last separator whether it is null to avoid `IndexOutOfBoundException`.  
@@ -329,7 +300,7 @@ System.out.println(ary.length);
 *public or protected methods -> private methods -> getter/setter methods*.          
  > <font color="#977C00">Note: </font> As the most concerned ones for consumers and providers, *public* methods should be put on the first screen. *Protected* methods are only cared for by the subclasses, but they have chances to be vital when it comes to Template Design Pattern. *Private* methods, the black-box approaches, basically are not significant to clients. *Getter/setter* methods of a Service or a DAO should be put at the end of the class implementation because of the low significance.
 
-17\. **[Recommended]** For a *setter* method, the argument name should be the same as the field name. Implementations of business logics in *getter/setter* methods, which will increase difficulties of the troubleshooting, are not recommended.  
+17\. **[Recommended]** For a *setter* method, the argument name should be the same as the field name. Implementations of business logic in *getter/setter* methods, which will increase difficulties of troubleshooting, are not recommended.  
  > <font color="#FF4500">Counter example: </font>
  ```java
  public Integer getData() {
@@ -352,9 +323,9 @@ for (int i = 0; i < 100; i++) {
 > <font color="#977C00">Note: </font>According to the decompiled bytecode file, for each loop, it allocates a `StringBuilder` object, appends a string, and finally returns a `String` object via the `toString` method. This is a tremendous waste of memory.
 
 19\. **[Recommended]** Keyword *final* should be used in the following situations:    
-&emsp;&emsp;1) A class which is not allow to be inherited, or a local variable not to be reassigned.  
-&emsp;&emsp;2) An argument which is not allow to be modified.   
-&emsp;&emsp;3) A method which is not allow to be overridden.
+&emsp;&emsp;1) A class which is not allowed to be inherited, or a local variable not to be reassigned.  
+&emsp;&emsp;2) An argument which is not allowed to be modified.   
+&emsp;&emsp;3) A method which is not allowed to be overridden.
 
 20\. **[Recommended]** Be cautious to copy an object using the `clone` method in `Object`.  
  > <font color="#977C00">Note: </font>The default implementation of `clone` in `Object` is a shallow (not deep) copy, which copies fields as pointers to the same objects in memory.
@@ -385,10 +356,10 @@ for (int i = 0; i < 100; i++) {
 4\. **[Mandatory]** Do not cast *subList* in class `ArrayList`, otherwise  `ClassCastException` will be thrown: `java.util.RandomAccessSubList` cannot be cast to `java.util.ArrayList`.  
  > <font color="#977C00">Note: </font>`subList` of `ArrayList` is an inner class, which is a view of `ArrayList`. All operations on the `Sublist` will affect the original list.
 
-5\. **[Mandatory]** When using *subList*, be careful when modifying the size of original list. It might cause `ConcurrentModificationException` when performing traversing, adding or deleting on the *subList*.   
+5\. **[Mandatory]** When using *subList*, be careful when modifying the size of the original list. It might cause `ConcurrentModificationException` when performing traversing, adding or deleting on the *subList*.   
 
 6\. **[Mandatory]** Use `toArray(T[] array)` to convert a list to an array. The input array type should be the same as the list whose size is `list.size()`.    
- > <font color="#FF4500">Counter example: </font> Do not use `toArray` method without arguments. Since the return type is `Object[]`, `ClassCastException` will be thrown when casting it to a different array type.  
+ > <font color="#FF4500">Counter example: </font> Do not use the `toArray` method without arguments. Since the return type is `Object[]`, `ClassCastException` will be thrown when casting it to a different array type.  
 > <font color="#019858">Positive example: </font>
 ```java
 		List<String> list = new ArrayList<String>(2);
@@ -456,7 +427,7 @@ new Comparator<Student>() {
 > <font color="#977C00">Note: </font>Better to use `ArrayList(int initialCapacity)` to initialize `ArrayList`.
 
 12\. **[Recommended]** Use `entrySet` instead of `keySet` to traverse KV maps.   
-> <font color="#977C00">Note: </font>Actually, `keySet` iterates through the map twice, firstly convert to `Iterator` object, then get the value from the `HashMap` by key. `EntrySet` iterates only once and puts keys and values in the entry which is more efficient. Use `Map.foreach` method in JDK8.  
+> <font color="#977C00">Note: </font>Actually, `keySet` iterates through the map twice, firstly converting to `Iterator` object, then getting the value from the `HashMap` by key. `EntrySet` iterates only once and puts keys and values in the entry which is more efficient. Use `Map.foreach` method in JDK8.  
  > <font color="#019858">Positive example: </font>`values()` returns a list including all values, `keySet()` returns a set including all values, `entrySet()` returns a k-v combined object.
 
 13\. **[Recommended]** Carefully check whether a *k/v collection* can store *null* value, refer to the table below:
@@ -470,17 +441,17 @@ new Comparator<Student>() {
  
 > <font color="#FF4500">Counter example: </font>Confused by `HashMap`, lots of people think *null* is allowed in `ConcurrentHashMap`. Actually,  `NullPointerException` will be thrown when putting in *null* value.
 
-14\. **[For Reference]** Properly use sort and order of a collection to avoid negative influence of unsorted and unordered one.  
-> <font color="#977C00">Note: </font>*Sorted* means that its iteration follows  specific sorting rule. *Ordered* means the order of elements in each traverse is stable. e.g. `ArrayList` is ordered and unsorted, `HashMap` is unordered and unsorted, `TreeSet` is ordered and sorted.
+14\. **[For Reference]** Properly use the sort and order of a collection to avoid the negative influence of unsorted and unordered ones.  
+> <font color="#977C00">Note: </font>*Sorted* means that its iteration follows a specific sorting rule. *Ordered* means the order of elements in each traverse is stable. e.g. `ArrayList` is ordered and unsorted, `HashMap` is unordered and unsorted, `TreeSet` is ordered and sorted.
 
-15\. **[For Reference]** Deduplication operations could be performed quickly since set stores unique values only. Avoid using method *contains* of `List` to perform traverse, comparison and de-duplication.  
+15\. **[For Reference]** Deduplication operations could be performed quickly since the set stores unique values only. Avoid using method *contains* of `List` to perform traverse, comparison and de-duplication.  
 
 
 ### <font color="green">Concurrency</font>
-1\. **[Mandatory]** Thread-safe should be ensured when initializing singleton instance, as well as all methods in it.
+1\. **[Mandatory]** Thread-safe should be ensured when initializing a singleton instance, as well as all methods in it.
 > <font color="#977C00">Note: </font>Resource driven class, utility class and singleton factory class are all included.
 
-2\. **[Mandatory]** A meaningful thread name is helpful to trace the error information, so assign a name when creating threads or thread pools.   
+2\. **[Mandatory]** A meaningful thread name helps trace the error information, so assign a name when creating threads or thread pools.   
  > <font color="#019858">Positive example: </font>
  ```java
  public class TimerTaskThread extends Thread {
@@ -492,9 +463,9 @@ new Comparator<Student>() {
  ```  
 
 3\. **[Mandatory]** Threads should be provided by thread pools. Explicitly creating threads is not allowed. 
- > <font color="#977C00">Note: </font>Using thread pool can reduce the time of creating and destroying thread and save system resource. If we do not use thread pools, lots of similar threads will be created which lead to "running out of memory" or over-switching problems.
+ > <font color="#977C00">Note: </font>Using a thread pool can reduce the time of creating and destroying threads and save system resources. If we do not use thread pools, lots of similar threads will be created which leads to "running out of memory" or over-switching problems.
 
-4\. **[Mandatory]** A thread pool should be created by `ThreadPoolExecutor` rather than `Executors`. These would make the parameters of the thread pool understandable. It would also reduce the risk of running out of system resource.  
+4\. **[Mandatory]** A thread pool should be created by `ThreadPoolExecutor` rather than `Executors`. These would make the parameters of the thread pool understandable. It would also reduce the risk of running out of system resources.  
  > <font color="#977C00">Note: </font>Below are the problems created by usage of `Executors` for thread pool creation:   
 &emsp;&emsp;1) `FixedThreadPool` and `SingleThreadPool`:  
 &emsp;&emsp;Maximum request queue size `Integer.MAX_VALUE`. A large number of requests might cause OOM.   
@@ -502,7 +473,7 @@ new Comparator<Student>() {
 &emsp;&emsp;The number of threads which are allowed to be created is `Integer.MAX_VALUE`. Creating too many threads might lead to OOM.
 
 5\. **[Mandatory]** `SimpleDateFormat` is unsafe, do not define it as a *static* variable. If have to, lock or `DateUtils` class must be used.  
- > <font color="#019858">Positive example: </font>Pay attention to thread-safety when using `DateUtils`. It is recommended to use as below:
+ > <font color="#019858">Positive example: </font>Pay attention to thread safety when using `DateUtils`. It is recommended to use as below:
  ```java
 private static final ThreadLocal<DateFormat> df = new ThreadLocal<DateFormat>() {  
     @Override  
@@ -524,25 +495,25 @@ try {
 }
 ```
 
-7\. **[Mandatory]** In highly concurrent scenarios, performance of `Lock` should be considered in synchronous calls. A block lock is better than a method lock. An object lock is better than a class lock.
+7\. **[Mandatory]** In highly concurrent scenarios, the performance of `Lock` should be considered in synchronous calls. A block lock is better than a method lock. An object lock is better than a class lock.
 
 8\. **[Mandatory]** When adding locks to multiple resources, tables in the database and objects at the same time, locking sequence should be kept consistent to avoid deadlock.    
 > <font color="#977C00">Note: </font> If thread 1 does update after adding lock to table A, B, C accordingly, the lock sequence of thread 2 should also be A, B, C, otherwise deadlock might happen.
 
-9\. **[Mandatory]** When getting a lock by blocking methods, such as waiting in the blocking queue, lock() implemented from Lock must be put outside the try block. Besides, make sure no method between the lock() and try block in case that the lock won't be released in the finally block.  
-> <font color="#977C00">Note 1: </font>If there are some exceptions thrown between lock() and try block, it won't be able to release the lock, causing that the other threads cannot get the lock.  
+9\. **[Mandatory]** When getting a lock by blocking methods, such as waiting in the blocking queue, lock() implemented from Lock must be put outside the try block. Besides, make sure no method between the lock() and try block in case the lock won't be released in the *finally* block.  
+> <font color="#977C00">Note 1: </font>If there are some exceptions thrown between lock() and try block, it won't be able to release the lock, causing the other threads cannot get the lock.  
 > <font color="#977C00">Note 2: </font>If lock() fails to run successfully between try block and lock(), it is possible that unlock() won't work. Then AQS(AbstractQueuedSynchronizer) method will be called (depends on the implementation of the class) and IllegalMonitorStateException will be thrown.  
 > <font color="#977C00">Note 3: </font>It is possible that when implementing the lock() method in Lock object, it would throw unchecked Exception, resulting in the same outcome as Note 2.
 
-10\. **[Mandatory]** A lock needs to be used to avoid update failure when modifying one record concurrently. Add lock either in application layer, in cache, or add optimistic lock in the database by using version as update stamp.  
- > <font color="#977C00">Note: </font>If access confliction probability is less than 20%, recommend to use optimistic lock, otherwise use pessimistic lock. Retry number of optimistic lock should be no less than 3.
+10\. **[Mandatory]** A lock needs to be used to avoid update failure when modifying one record concurrently. Add lock either in the application layer, in the cache, or add an optimistic lock in the database by using version as an update stamp.  
+ > <font color="#977C00">Note: </font>If access confliction probability is less than 20%, recommended to use optimistic lock, otherwise use pessimistic lock. The retry number of optimistic lock should be no less than 3.
 
 11\. **[Mandatory]** Run multiple `TimeTask` by using `ScheduledExecutorService` rather than `Timer` because `Timer` will kill all running threads in case of failing to catch exceptions.
 
-12\. **[Recommended]** When using `CountDownLatch` to convert asynchronous operations to synchronous ones, each thread must call `countdown` method before quitting. Make sure to catch any exception during thread running, to let `countdown` method be  executed. If main thread cannot reach `await` method, program will return until timeout.  
-> <font color="#977C00">Note: </font>Be careful, exception thrown by sub-thread cannot be caught by main thread.
+12\. **[Recommended]** When using `CountDownLatch` to convert asynchronous operations to synchronous ones, each thread must call `countdown` method before quitting. Make sure to catch any exceptions during the thread running, to let `countdown` method be executed. If main thread cannot reach `await` method, program will return until timeout.  
+> <font color="#977C00">Note: </font>Be careful, exception thrown by a sub-thread cannot be caught by the main thread.
 
-13\. **[Recommended]** Avoid using `Random` instance by multiple threads. Although it is safe to share this instance, competition on the same seed will damage performance.  
+13\. **[Recommended]** Avoid using `Random` instances by multiple threads. Although it is safe to share this instance, competition on the same seed will damage performance.  
 > <font color="#977C00">Note: </font>`Random` instance includes instances of `java.util.Random` and `Math.random()`.  
 > <font color="#019858">Positive example: </font>After JDK7, API `ThreadLocalRandom` can be used directly. But before JDK7, instance needs to be created in each thread.
 
@@ -564,7 +535,7 @@ class Foo {
 }
 ```
 
-15\. **[For Reference]** `volatile` is used to solve the problem of invisible memory in multiple threads. *Write-Once-Read-Many* can solve variable synchronization problem. But *Write-Many* cannot settle thread safe problem. For `count++`, use below example:　    
+15\. **[For Reference]** `volatile` is used to solve the problem of invisible memory in multiple threads. *Write-Once-Read-Many* can solve variable synchronization problems. But *Write-Many* cannot settle thread safe problem. For `count++`, use the below example:　    
 ```java
 AtomicInteger count = new AtomicInteger(); 
 count.addAndGet(1); 
@@ -606,7 +577,7 @@ public void today() {
         return;
     }
 
-    System.out.println("Stay at home to learn Alibaba Java Coding Guidelines.");
+    System.out.println("Stay at home to learn Java Coding Guidelines.");
     return;
 }
 ```
@@ -632,17 +603,12 @@ if ((file.open(fileName, "w") != null) && (...) || (...)) {
 
 6\. **[Recommended]** Size of input parameters should be checked, especially for batch operations.  
 
-7\. **[For Reference]** Input parameters should be checked in following scenarios:     
+7\. **[For Reference]** Input parameters should be checked in the following scenarios:     
 &emsp;&emsp;1) Low-frequency implemented methods.  
-&emsp;&emsp;2) Overhead of parameter checking could be ignored in long-time execution methods, but if illegal parameters lead to exception, the loss outweighs the gain. Therefore, parameter checking is still recommended in long-time execution methods.  
-&emsp;&emsp;3) Methods that needs extremely high stability or availability.    
+&emsp;&emsp;2) Overhead of parameter checking could be ignored in long-time execution methods, but if illegal parameters lead to an exception, the loss outweighs the gain. Therefore, parameter checking is still recommended in long-time execution methods.  
+&emsp;&emsp;3) Methods that need extremely high stability or availability.    
 &emsp;&emsp;4) Open API methods, including RPC/API/HTTP.  
 &emsp;&emsp;5) Authority related methods.
-
-8\. **[For Reference]** Cases that input parameters do not require validation:  
-&emsp;&emsp;1) Methods very likely to be implemented in loops. A note should be included informing that parameter check should be done externally.   
-&emsp;&emsp;2) Methods in bottom layers are very frequently called so generally do not need to be checked. e.g. If *DAO* layer and *Service* layer is deployed in the same server, parameter check in *DAO* layer can be omitted.    
-&emsp;&emsp;3) *Private* methods that can only be implemented internally, if all parameters are checked or manageable.
 
 ### <font color="green">Code Comments</font>
 1\. **[Mandatory]** *Javadoc* should be used for classes, class variables and methods. The format should be '/\*\* comment \*\*/', rather than '// xxx'.   
@@ -687,19 +653,19 @@ The name of method and parameters already represent what does the method do, so 
 2\. **[Mandatory]** When using attributes of POJO in velocity, use attribute names directly. Velocity engine will invoke `getXxx()` of POJO automatically. In terms of *boolean* attributes, velocity engine will invoke `isXxx()` (Do not use *is* as prefix when naming boolean attributes).  
 > <font color="#977C00">Note: </font>For wrapper class `Boolean`, velocity engine will invoke `getXxx()` first.
 
-3\. **[Mandatory]** Variables must add exclamatory mark when passing to velocity engine from backend, like \$!{var}.  
+3\. **[Mandatory]** Variables must add an exclamatory mark when passing to velocity engine from backend, like \$!{var}.  
  > <font color="#977C00">Note: </font>If attribute is *null* or does not exist, \${var} will be shown directly on web pages.
 
-4\. **[Mandatory]** The return type of `Math.random()` is double, value range is *0<=x<1* (<font color="blue">0</font> is possible). If a random integer is required, do not multiply x by 10 then round the result. The correct way is to use `nextInt` or `nextLong` method which belong to Random Object.
+4\. **[Mandatory]** The return type of `Math.random()` is double, value range is *0<=x<1* (<font color="blue">0</font> is possible). If a random integer is required, do not multiply x by 10 then round the result. The correct way is to use `nextInt` or `nextLong` method which belongs to Random Object.
 
 5\. **[Mandatory]** Use `System.currentTimeMillis()` to get the current millisecond. Do not use `new Date().getTime()`. 
 > <font color="#977C00">Note: </font>In order to get a more accurate time, use `System.nanoTime()`. In JDK8, use `Instant` class to deal with situations like time statistics.
 
-6\. **[Recommended]** It is better not to contain variable declaration, logical symbols or any complicated logic in velocity template files.
+6\. **[Recommended]** It is better not to contain a variable declaration, logical symbols or any complicated logic in velocity template files.
 
 7\. **[Recommended]** Size needs to be specified when initializing any data structure if possible, in order to avoid memory issues caused by unlimited growth.
  
-8\. **[Recommended]** Codes or configuration that is noticed to be obsoleted should be resolutely removed from projects.   
+8\. **[Recommended]** Codes or configurations that are noticed to be obsoleted should be resolutely removed from projects.   
 > <font color="#977C00">Note: </font>Remove obsoleted codes or configuration in time to avoid code redundancy.  
  > <font color="#019858">Positive example: </font>For codes which are temporarily removed and likely to be reused, use **`///`** to add a reasonable note. 
 ```java
@@ -735,13 +701,13 @@ public static void hello() {
 8\. **[Mandatory]** The *Exception* type to be caught needs to be the same class or superclass of the type that has been thrown.
 
 9\. **[Recommended]** The return value of a method can be *null*. It is not mandatory to return an empty collection or object. Specify in *Javadoc* explicitly when the method might return *null*. The caller needs to make a *null* check to prevent `NullPointerException`.   
-> <font color="#977C00">Note: </font>It is caller's responsibility to check the return value, as well as to consider the possibility that remote call fails or other runtime exception occurs.
+> <font color="#977C00">Note: </font>It is the caller's responsibility to check the return value, as well as to consider the possibility that a remote call fails or another runtime exception occurs.
 
 10\. **[Recommended]** One of the most common errors is `NullPointerException`. Pay attention to the following situations:  
-&emsp;&emsp;1) If the return type is primitive, return a value of wrapper class may cause `NullPointerException`.  
+&emsp;&emsp;1) If the return type is primitive, returning a value of wrapper class may cause `NullPointerException`.  
 &emsp;&emsp;&emsp;&emsp;<font color="#FF4500">Counter example: </font>`public int f() { return Integer }` Unboxing a *null* value will throw a `NullPointerException`.   
 &emsp;&emsp;2) The return value of a database query might be *null*.    
-&emsp;&emsp;3) Elements in collection may be *null*, even though `Collection.isEmpty()` returns *false*.   
+&emsp;&emsp;3) Elements in a collection may be *null*, even though `Collection.isEmpty()` returns *false*.   
 &emsp;&emsp;4) Return values from an RPC might be *null*.    
 &emsp;&emsp;5) Data stored in sessions might by *null*.  
 &emsp;&emsp;6) Method chaining, like `obj.getA().getB().getC()`, is likely to cause `NullPointerException`.  
@@ -756,7 +722,7 @@ public static void hello() {
 
 13\. **[For Reference]** Avoid duplicate code (Do not Repeat Yourself, also known as DRY principle).  
 > <font color="#977C00">Note: </font>Copying and pasting code arbitrarily will inevitably lead to duplicated code. If you keep logic in one place, it is easier to change when needed. If necessary, extract common codes to methods, abstract classes or even shared modules.    
-> <font color="#019858">Positive example: </font>For a class with a number of public methods that validate parameters in the same way, it is better to extract a method like: 
+> <font color="#019858">Positive example: </font>For a class with many public methods that validate parameters in the same way, it is better to extract a method like: 
 ```java
 private boolean checkParam (DTO dto) {
     ...
@@ -777,7 +743,7 @@ private static final Logger logger = LoggerFactory.getLogger(Abc.class);
 *appName\_logType\_logName.log*   
 *logType*: Recommended classifications are *stats*, *desc*, *monitor*, *visit*, etc.    
 *logName*: Log description.  
-Benefits of this scheme: The file name shows what application the log belongs to, type of the log and what purpose is the log used for. It is also conducive for classification and search.   
+Benefits of this scheme: The file name shows what application the log belongs to, the type of the log and what purpose is the log used for. It is also conducive for classification and search.   
 > <font color="#019858">Positive example: </font>Name of the log file for monitoring the timezone conversion exception in *mppserver* application: *mppserver_monitor_timeZoneConvert.log*  
 > <font color="#977C00">Note: </font>It is recommended to classify logs. Error logs and business logs should be stored separately as far as possible. It is not only easy for developers to view, but also convenient for system monitoring.
 
@@ -796,7 +762,7 @@ logger.debug("Processing trade with id: {} and symbol : {} ", id, symbol);
 
 5\. **[Mandatory]** Ensure that additivity attribute of a Log4j logger is set to *false*, in order to avoid redundancy and save disk space.  
 > <font color="#019858">Positive example: </font>
-`<logger name="com.taobao.ecrm.member.config" additivity="false" \>`
+`<logger name="uk.ac.manchester.dhs.xxx.config" additivity="false" \>`
 
 
 6\. **[Mandatory]** The exception information should contain two types of information: the context information and the exception stack. If you do not want to handle the exception, re-throw it.  
@@ -805,10 +771,10 @@ logger.debug("Processing trade with id: {} and symbol : {} ", id, symbol);
 logger.error(various parameters or objects toString + "_" + e.getMessage(), e);
 ```
 
-7\. **[Recommended]** Carefully record logs. Use *Info* level selectively and do not use *Debug* level in production environment. If *Warn* is used to record business behavior, please pay attention to the size of logs. Make sure the server disk is not over-filled, and remember to delete these logs in time.  
+7\. **[Recommended]** Carefully record logs. Use *Info* level selectively and do not use *Debug* level in a production environment. If *Warn* is used to record business behavior, please pay attention to the size of the logs. Make sure the server disk is not over-filled, and remember to delete these logs in time.  
 > <font color="#977C00">Note: </font> Outputting a large number of invalid logs will have a certain impact on system performance, and is not conducive to rapid positioning problems. Please think about the log: do you really have these logs? What can you do to see this log? Is it easy to troubleshoot problems?
 
-8\. **[Recommended]** Level *Warn* should be used to record invalid parameters, which is used to track data when problem occurs. Level *Error* only records the system logic error, abnormal and other important error messages. 
+8\. **[Recommended]** Level *Warn* should be used to record invalid parameters, which is used to track data when a problem occurs. Level *Error* only records the system logic error, abnormal and other important error messages. 
 
 ## <font color="green">3. MySQL Rules</font>
 ### <font color="green">Table Schema Rules</font>
@@ -831,7 +797,7 @@ logger.error(various parameters or objects toString + "_" + e.getMessage(), e);
 
 7\. **[Mandatory]** Use *char* if lengths of information to be stored in that column are almost the same.
 
-8\. **[Mandatory]** The length of *varchar* should not exceed 5000, otherwise it should be defined as `text`. It is better to store them in a separate table in order to avoid its effect on indexing efficiency of other columns.  
+8\. **[Mandatory]** The length of *varchar* should not exceed 5000, otherwise it should be defined as `text`. It is better to store them in a separate table to avoid its effect on the indexing efficiency of other columns.  
 
 9\. **[Mandatory]** A table must include three columns as following: *id*, *gmt_create* and *gmt_modified*.  
 > <font color="#977C00">Note: </font> *id* is the primary key, which is *unsigned bigint* and self-incrementing with step length of 1. The type of *gmt_create* and *gmt_modified* should be *DATE_TIME*.
@@ -930,122 +896,11 @@ logger.error(various parameters or objects toString + "_" + e.getMessage(), e);
 
 9\. **[Recommended]** *IN* clause should be avoided. Record set size of the *IN* clause should be evaluated carefully and control it within 1000, if it cannot be avoided.
 
-10\. **[For Reference]** For globalization needs, characters should be represented and stored with *UTF-8*, and be cautious of character number counting.  
-> <font color="#977C00">Note: </font>
- SELECT LENGTH("轻松工作"); returns *12*.   
- SELECT CHARACTER_LENGTH("轻松工作"); returns *4*.   
-Use *UTF8MB4* encoding to store emoji if needed, taking into account of its difference from *UTF-8*.
+10\. **[For Reference]** For globalization needs, characters should be represented and stored with *UTF8MB4*.
 
 11\. **[For Reference]** *TRUNCATE* is not recommended when coding, even if it is faster than *DELETE* and uses less system, transaction log resource. Because *TRUNCATE* does not have transaction nor trigger DB *trigger*, problems might occur.  
 > <font color="#977C00">Note: </font>In terms of Functionality, *TRUNCATE TABLE* is similar to *DELETE* without *WHERE* sub-clause. 
-
-### <font color="green">ORM Rules</font>
-1\. **[Mandatory]** Specific column names should be specified during query, rather than using \*.    
- > <font color="#977C00">Note: </font> 
-1) \* increases parsing cost.  
-2) It may introduce mismatch with *resultMap* when adding or removing query columns.  
-
-2\. **[Mandatory]** Name of *Boolean* property of *POJO* classes cannot be prefixed with *is*, while DB column name should prefix with *is*. A mapping between properties and columns is required.  
-> <font color="#977C00">Note: </font>Refer to rules of *POJO* class and DB column definition, mapping is needed in *resultMap*. Code generated by *MyBatis Generator* might need to be adjusted.
-
-3\. **[Mandatory]** Do not use *resultClass* as return parameters, even if all class property names are the same as DB columns, corresponding DO definition is needed.  
-> <font color="#977C00">Note: </font><resultMap>Mapping configuration is needed, to decouple DO definition and table columns, which in turn facilitates maintenance.
-
-4\. **[Mandatory]** Be cautious with parameters in xml configuration. Do not use `${}` in place of `#{}`, `#param#`. SQL injection may happen in this way.
-
-5\. **[Mandatory]** *iBatis* built in *queryForList(String statementName, int start, int size)* is not recommended.  
-> <font color="#977C00">Note: </font>It may lead to *OOM* issue because its implementation is to retrieve all DB records of statementName's corresponding SQL statement, then start, size subset is applied through subList.   
-> <font color="#019858">Positive example: </font>Use *#start#*, *#size#* in *sqlmap.xml*.
-```java
-Map<String, Object> map = new HashMap<String, Object>();  
-map.put("start", start);  
-map.put("size", size);  
-```
-
-6\. **[Mandatory]** Do not use *HashMap* or *HashTable* as DB query result type.
-
-7\. **[Mandatory]** *gmt_modified* column should be updated with current timestamp simultaneously with DB record update.
-
-8\. **[Recommended]** Do not define a universal table updating interface, which accepts POJO as input parameter, and always update table set *c1=value1, c2=value2, c3=value3, ...* regardless of intended columns to be updated. It is better not to update unrelated columns, because it is error prone, not efficient, and increases *binlog* storage. 
-
-9\. **[For Reference]** Do not overuse *@Transactional*. Because transaction affects QPS of DB, and relevant rollbacks may need be considered, including cache rollback, search engine rollback, message making up, statistics adjustment, etc.
-
-10\. **[For Reference]** *compareValue* of *\<isEqual>* is a constant (normally a number) which is used to compared with property value. *\<isNotEmpty>* means executing corresponding logic when property is not empty and not null. *\<isNotNull>* means executing related logic when property is not null.
-
-## <font color="green">4. Project Specification</font>
-### <font color="green">Application Layers</font>
-
-1\. **[Recommended]** The upper layer depends on the lower layer by default. Arrow means direct dependent. For example: Open Interface can depend on Web Layer, it can also directly depend on Service Layer, etc.: 
-
-![](layers.png)
-
-- **Open Interface:** In this layer service is encapsulate to be exposed as RPC interface, or HTTP interface through Web Layer; The layer also implements gateway security control, flow control, etc.  
-- **View:** In this layer templates of each terminal render and execute. Rendering approaches include velocity rendering, JS rendering, JSP rendering, and mobile display, etc.  
-- **Web Layer:** This layer is mainly used to implement forward access control, basic parameter verification, or  non-reusable services.   
-- **Service Layer:** In this layer concrete business logic is implemented.   
-- **Manager Layer:** This layer is the common business process layer, which contains the following features:  
-&emsp;&emsp;1) Encapsulates third-party service, to preprocess return values and exceptions;  
-&emsp;&emsp;2) The precipitation of general ability of Service Layer, such as caching solutions, middleware general processing;  
-&emsp;&emsp;3) Interacts with the *DAO layer*, including composition and reuse of multiple *DAO* classes.  
-- **DAO Layer**: Data access layer, data interacting with MySQL, Oracle and HBase.  
-- **External interface or third-party platform:** This layer includes RPC open interface from other departments or companies.   
- 
-
-2\. **[For Reference]** Many exceptions in the *DAO Layer* cannot be caught by using a fine-grained exception class. The recommended way is to use `catch (Exception e)`, and `throw new DAOException(e)`. In these cases, there is no need to print the log because the log should have been caught and printed in *Manager Layer/Service Layer*.  
-&emsp;&emsp; Logs about exception in *Service Layer* must be recorded with as much information about the parameters as possible to make debugging simpler.   
-&emsp;&emsp; If *Manager Layer* and *Service Layer* are deployed in the same server, log logic should be consistent with *DAO Layer*. If they are deployed separately, log logic should be consistent with each other.  
- &emsp;&emsp; In *Web Layer* Exceptions cannot be thrown, because it is already on the top layer and there is no way to deal with abnormal situations. If the exception is likely to cause failure when rendering the page, the page should be redirected to a friendly error page with the friendly error information.  
-&emsp;&emsp; In *Open Interface* exceptions should be handled by using *error code* and *error message*.
-
-3\. **[For Reference]** Layers of Domain Model:  
-
-- **DO (Data Object):** Corresponding to the database table structure, the data source object is transferred upward through *DAO* Layer.
-- **DTO (Data Transfer Object):** Objects which are transferred upward by *Service Layer* and Manager Layer.
-- **BO (Business Object):** Objects that encapsulate business logic, which can be outputted by *Service Layer*.
-- **Query**: Data query objects that carry query request from upper layers. Note: Prohibit the use of `Map` if there are more than 2 query conditions.
-- **VO (View Object):** Objects that are used in *Display Layer*, which is normally transferred from *Web Layer*.
- 
-
-### <font color="green">Library Specification</font>
-1\. **[Mandatory]** Rules of defining GAV:     
-&emsp;&emsp;1) **<font color="blue">G</font>**roupID: `com.{company/BU}.{business line}.{sub business line}`, at most 4 levels   
-> <font color="#977C00">Note: </font>{company/BU} for example: such business unit level as Alibaba, Taobao, Tmall, Aliexpress and so on; sub-business line is optional.   
-> <font color="#019858">Positive example: </font>com.taobao.tddl &emsp;&emsp;com.alibaba.sourcing.multilang   
-
-&emsp;&emsp;2) **<font color="blue">A</font>**rtifactID: Product name - module name.  
-> <font color="#019858">Positive example: </font>`tc-client` / `uic-api` / `tair-tool`  
-
-&emsp;&emsp;3) **<font color="blue">V</font>**ersion: Please refer to below  
-
-2\. **[Mandatory]** Library naming convention: `prime version number`.`secondary version number`.`revision number`  
-&emsp;&emsp;1) **prime version number**: Need to change when there are incompatible API modification, or new features that can change the  product direction.   
-&emsp;&emsp;2) **secondary version number**: Changed for backward compatible modification.  
-&emsp;&emsp;3) **revision number**: Changed for fixing bugs or adding features that do not modify the method signature and maintain API compatibility.  
- > <font color="#977C00">Note: </font>The initial version must be <font color="blue">1.0.0</font>, rather than <font color="red">0.0.1</font>.
-
-3\. **[Mandatory]** Online applications should not depend on *SNAPSHOT* versions (except for security packages); Official releases must be verified from central repository, to make sure that the RELEASE version number has continuity. Version numbers are not allowed to be overridden.  
-> <font color="#977C00">Note: </font>Avoid using *SNAPSHOT* is to ensure the idempotent of application release. In addition, it can speed up the code compilation when packaging. If the current version is *1.3.3*, then the number for the next version can be *1.3.4*, *1.4.0* or *2.0.0*.
-
-4\. **[Mandatory]** When adding or upgrading libraries, remain the versions of dependent libraries unchanged if not necessary. If there is a change, it must be correctly assessed and checked. It is recommended to use command *dependency:resolve* to compare the information before and after. If the result is identical, find out the differences with the command *dependency:tree* and use *\<excludes\>* to eliminate unnecessary libraries.
-
-5\. **[Mandatory]** Enumeration types can be defined or used for parameter types in libraries, but cannot be used for interface return types (POJO that contains enumeration types is also not allowed). 
-
-6\. **[Mandatory]** When a group of libraries are used, a uniform version variable need to be defined to avoid the inconsistency of version numbers.  
-> <font color="#977C00">Note: </font>When using `springframework-core`, `springframework-context`, `springframework-beans` with the same version, a uniform version variable \${spring.version} is recommended to be used.
-
-7\. **[Mandatory]** For the same *GroupId* and *ArtifactId*, *Version* must be the same in sub-projects.  
-> <font color="#977C00">Note: </font>During local debugging, version number specified in sub-project is used. But when merged into a war, only one version number is applied in the lib directory. Therefore, such case might occur that offline debugging is correct, but failure occurs after online launch.
-
-8\. **[Recommended]** The declaration of dependencies in all *POM* files should be placed in *\<dependencies\>* block. Versions of dependencies should be specified in *\<dependencyManagement\>* block.   
-> <font color="#977C00">Note: </font>In *\<dependencyManagement\>* versions of dependencies are specified, but dependencies are not imported. Therefore, in sub-projects dependencies need to be declared explicitly, version and scope of which are read from the parent *POM*. All declarations in *\<dependencies\>* in the main *POM* will be automatically imported and inherited by all subprojects by default.
-
-9\. **[Recommended]** It is recommended that libraries do not include configuration, at least do not increase the configuration items.
-
-10\. **[For Reference]** In order to avoid the dependency conflict of libraries, the publishers should follow the principles below:  
-&emsp;&emsp;1) **Simple and controllable:**  Remove all unnecessary API and dependencies, only contain Service API, necessary domain model objects, Utils classes, constants, enumerations, etc. If other libraries must be included, better to make the scope as *provided* and let users to depend on the specific version number. Do not depend on specific log implementation, only depend on the log framework instead.  
-&emsp;&emsp;2) **Stable and traceable:** Change log of each version should be recorded. Make it easy to check the library owner and where the source code is. Libraries packaged in the application should not be changed unless the user updates the version proactively.
-
-### <font color="green">Server Specification</font>
+## <font color="green">4. Server Specification</font>
 1\. **[Recommended]** It is recommended to reduce the *time_wait* value of the *TCP* protocol for high concurrency servers.  
 > <font color="#977C00">Note: </font> By default the operating system will close connection in *time_wait* state after 240 seconds. In high concurrent situation, the server may not be able to establish new connections because there are too many connections in *time_wait* state, so the value of *time_wait* needs to be reduced.  
 > <font color="#019858">Positive example: </font>Modify the default value (Sec) by modifying the *_etcsysctl.conf* file on Linux servers: 
@@ -1058,7 +913,6 @@ map.put("size", size);
 > <font color="#977C00">Note: </font>*OOM* does not occur very often, only once in a few months. The dump information printed when error occurs is very valuable for error checking.
 
 4\. **[For Reference]** Use *forward* for internal redirection and URL assembly tools for external redirection. Otherwise there will be problems about URL maintaining inconsistency and potential security risks.
-
 ## <font color="green">5. Security Specification</font>
 
 1\. **[Mandatory]** User-owned pages or functions must be authorized.  
@@ -1069,7 +923,7 @@ map.put("size", size);
 
 3\. **[Mandatory]** *SQL* parameter entered by users should be checked carefully or limited by *METADATA*, to prevent *SQL* injection. Database access by string concatenation *SQL* is forbidden.  
 
-4\. **[Mandatory]** Any parameters input by users must go through validation check.  
+4\. **[Mandatory]** Any parameters input by users must go through a validation check.  
 > <font color="#977C00">Note: </font>Ignoring parameter check may cause:
 > 
  * memory leak because of excessive page size
@@ -1079,7 +933,7 @@ map.put("size", size);
  * deserialize injection
  * *ReDoS*    
  
-> <font color="#977C00">Note: </font>In Java *regular expressions* is used to validate client input. Some *regular expressions* can validate common user input without any problem, but it could lead to a dead cycle if the attacker uses a specially constructed string to verify. 
+> <font color="#977C00">Note: </font>In Java *regular expressions* are used to validate client input. Some *regular expressions* can validate common user input without any problem, but it could lead to a dead cycle if the attacker uses a specially constructed string to verify. 
   
 5\. **[Mandatory]** It is forbidden to output user data to *HTML* page without security filtering or proper escaping.  
 
